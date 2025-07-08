@@ -1,0 +1,13 @@
+{
+  "tasks": {
+    "all":"deno run get-data-genshin && deno run get-data-hsr && deno run build",
+    "build":"deno --allow-all ./scripts/main.ts",
+    "get-data-genshin":"git clone https://github.com/DimbreathBot/AnimeGameData.git --depth=1",
+    "get-data-hsr":"git clone https://github.com/DimbreathBot/TurnBasedGameData.git --depth=1"
+  },
+  "imports": {
+    "@std/fs": "jsr:@std/fs@^1.0.19",
+    "@std/path": "jsr:@std/path@^1.1.1"
+  },
+  "nodeModulesDir": "auto"
+}
