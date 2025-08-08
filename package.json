@@ -1,0 +1,18 @@
+{
+  "type": "module",
+  "scripts": {
+    "all": "pnpm run get-data-genshin && pnpm run get-data-hsr && pnpm run build",
+    "build": "pnpm run build-text && pnpm run build-readable",
+    "build-text": "pnpm exec tsx ./scripts/text.ts",
+    "build-readable": "pnpm exec tsx ./scripts/readable.ts",
+    "get-data-genshin": "git clone https://github.com/DimbreathBot/AnimeGameData.git --depth=1",
+    "get-data-hsr": "git clone https://github.com/DimbreathBot/TurnBasedGameData.git --depth=1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.1.0",
+    "tsx": "^4.20.3"
+  },
+  "dependencies": {
+    "flexsearch": "^0.8.205"
+  }
+}

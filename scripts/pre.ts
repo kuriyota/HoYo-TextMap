@@ -1,33 +1,36 @@
-import { copy } from "jsr:@std/fs";
-import { join } from "jsr:@std/path";
-import { mergeSplitTextMaps } from "./merge.ts";
+import fs from 'node:fs/promises';
+import path from 'node:path';
 const dirname = import.meta.dirname as string;
+const filename = import.meta.filename as string;
+import { mergeSplitTextMaps } from './merge.ts';
 
 export const pre = async () => {
-  await copy(
-    join(dirname, "../AnimeGameData/TextMap"),
-    join(dirname, "../text-map-raw/Genshin"),
+  await fs.cp(
+    path.join(dirname, '../AnimeGameData/TextMap'),
+    path.join(dirname, '../text-map-raw/Genshin'),
     {
-      overwrite: true,
-    },
+      force: true,
+      recursive: true
+    }
   );
-  await copy(
-    join(dirname, "../TurnBasedGameData/TextMap"),
-    join(dirname, "../text-map-raw/StarRail"),
+  await fs.cp(
+    path.join(dirname, '../TurnBasedGameData/TextMap'),
+    path.join(dirname, '../text-map-raw/StarRail'),
     {
-      overwrite: true,
-    },
+      force: true,
+      recursive: true
+    }
   );
 
-  const SRFiles = Deno.readDir(join(dirname, "../TurnBasedGameData/TextMap"));
-  for await (const file of SRFiles) {
-    if (file.isFile && file.name.indexOf("Main") != -1) {
-      await Deno.remove(
-        join(dirname, "../text-map-raw/StarRail/", file.name),
-      );
+  const SRFiles = await fs.readdir(
+    path.join(dirname, '../TurnBasedGameData/TextMap')
+  );
+  for (const file of SRFiles) {
+    if (file.endsWith('Main.json')) {
+      await fs.rm(path.join(dirname, '../text-map-raw/StarRail/', file));
     }
   }
 
-  await mergeSplitTextMaps(join(dirname, "../text-map-raw/Genshin"));
-  await mergeSplitTextMaps(join(dirname, "../text-map-raw/StarRail"));
+  await mergeSplitTextMaps(path.join(dirname, '../text-map-raw/Genshin'));
+  await mergeSplitTextMaps(path.join(dirname, '../text-map-raw/StarRail'));
 };
