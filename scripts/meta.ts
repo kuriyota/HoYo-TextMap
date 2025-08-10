@@ -18,7 +18,7 @@ export const LANGUAGE_META = [
   { name: 'Tiếng Việt', lang: 'vi', id: 'VI' }
 ];
 
-export const GenshinVersion = '4.8';
+export const GenshinVersion = '5.8';
 export const StarRailVersion = '3.4';
 export const Games = {
   Genshin: 'AnimeGameData',

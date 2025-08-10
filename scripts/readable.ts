@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { Games } from './meta.ts';
+import { Games, GenshinVersion } from './meta.ts';
 const dirname = import.meta.dirname as string;
 const filename = import.meta.filename as string;
 
@@ -9,7 +9,9 @@ await fs.mkdir(S_DIR, { recursive: true });
 
 for (const [game, gameDir] of [['Genshin', 'AnimeGameData']]) {
   const meta = { files: [] } as any;
-  await fs.mkdir(path.join(S_DIR, game), { recursive: true });
+  await fs.mkdir(path.join(S_DIR, `${game}-${GenshinVersion}`), {
+    recursive: true
+  });
   const R_DIR = path.join(dirname, `../${gameDir}/Readable`);
   const dir = await fs.readdir(R_DIR);
   for (const lang of dir) {
@@ -22,14 +24,14 @@ for (const [game, gameDir] of [['Genshin', 'AnimeGameData']]) {
       files[file] = content;
     }
     await fs.writeFile(
-      path.join(S_DIR, `${game}/${lang}.json`),
+      path.join(S_DIR, `${game}-${GenshinVersion}/${lang}.json`),
       JSON.stringify(files, null, 2)
     );
     meta.files.push({
       name: lang,
-      path: `${game}/${lang}.json`,
+      path: `${game}-${GenshinVersion}/${lang}.json`,
       size: await fs
-        .stat(path.join(S_DIR, `${game}/${lang}.json`))
+        .stat(path.join(S_DIR, `${game}-${GenshinVersion}/${lang}.json`))
         .then((stat) => stat.size)
     });
     console.log(`${game} ${lang} done`);

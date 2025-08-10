@@ -1,4 +1,4 @@
-import { join } from 'node:path';
+import path, { join, relative } from 'node:path';
 import fs from 'node:fs/promises';
 import {
   Games,
@@ -15,7 +15,7 @@ const Data: Record<
   string,
   {
     files: {
-      name: string;
+      path: string;
       lang: string;
       size: number;
     }[];
@@ -26,11 +26,31 @@ const Data: Record<
 
 await fs.mkdir(join(dirname, '../data'), { recursive: true });
 
+const write = async (
+  game: string,
+  version: string,
+  langCode: string,
+  index: number,
+  content: Buffer<ArrayBuffer>
+) => {
+  const dir = join(dirname, `../data/text/${game}-${version}/${langCode}`);
+  await fs.mkdir(dir, { recursive: true });
+  const filename = `${game}-${version}-${langCode}-${index}.json`;
+  await fs.writeFile(join(dir, filename), content);
+  const size = content.length;
+  console.log(`Wrote ${filename} (${size} bytes)`);
+  return {
+    path: relative(join(dirname, '../data/text/'), join(dir, filename)),
+    size
+  };
+};
+
 for (const game of Object.keys(Games)) {
   const dir = await fs.opendir(join(dirname, '../text-map-raw', game));
+  const version = game === 'Genshin' ? GenshinVersion : StarRailVersion;
   Data[game] = {
     files: [],
-    version: game === 'Genshin' ? GenshinVersion : StarRailVersion,
+    version,
     updated: new Date().toISOString()
   };
 
@@ -77,22 +97,19 @@ for (const game of Object.keys(Games)) {
           bufferChunks.push(Buffer.from('}'));
           const finalBuffer = Buffer.concat(bufferChunks);
 
-          // 写入文件
-          const dir = join(dirname, `../data/text/${game}/${langCode}`);
-          await fs.mkdir(dir, { recursive: true });
-          const filename = `${chunkIndex}.json`;
-          await fs.writeFile(join(dir, filename), finalBuffer);
-          const size = finalBuffer.length;
-
+          const { path, size } = await write(
+            game,
+            version,
+            langCode,
+            chunkIndex,
+            finalBuffer
+          );
           Data[game].files.push({
-            name: filename,
+            path,
             size,
             lang: langCode
           });
 
-          console.log(`Wrote ${filename} (${size} bytes)`);
-
-          // 重置新分片
           chunkIndex++;
           currentSize = 1;
           bufferChunks = [Buffer.from('{')];
@@ -116,20 +133,18 @@ for (const game of Object.keys(Games)) {
       if (bufferChunks.length > 1 || currentSize > 1) {
         bufferChunks.push(Buffer.from('}'));
         const finalBuffer = Buffer.concat(bufferChunks);
-
-        const dir = join(dirname, `../data/text/${game}/${langCode}`);
-        await fs.mkdir(dir, { recursive: true });
-        const filename = `${chunkIndex}.json`;
-        await fs.writeFile(join(dir, filename), finalBuffer);
-        const size = finalBuffer.length;
-
+        const { path, size } = await write(
+          game,
+          version,
+          langCode,
+          chunkIndex,
+          finalBuffer
+        );
         Data[game].files.push({
-          name: filename,
+          path,
           size,
           lang: langCode
         });
-
-        console.log(`Wrote ${filename} (${size} bytes)`);
       }
     }
   }
